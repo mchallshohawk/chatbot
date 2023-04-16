@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+.filterBar {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 10px 200px;
+    padding-top: 30px;
+    background-color: hwb(0 100% 0%);
+    color: #000000;
+    align-items: center;
+}
+
+.searchWrapper {
+    min-width: 200px !important;
+    width: fit-content !important;
+    height: auto;
+    border-radius: 4px;
+    background-color: #fff;
+  }
+  
+  .highlightOption {
+    color: #000 !important;
+    background-color: unset !important;
+  }
+  
+  .multiSelectContainer li {
+    color: #000 !important;
+    background-color: unset !important;
+  }
+  
+  .notFound {
+    color: #000 !important;
+    background-color: unset !important;
+  }
+  
+  .chip {
+    background-color: #d81949 !important;
+  }
+  
+  /* [type="checkbox" i]{
+      background-color: #d81949 !important;
+      color: #d81949 !important;    
+  } */
+  .input[type="checkbox"]:checked+span:not(.lever):before {
+  
+      border-right: 2px solid #d81949 !important;
+      border-bottom: 2px solid #d81949 !important;
+  
+  }
+  
+  input[type="checkbox"]:checked {
+      background-color: #50353c;
+      accent-color: #d81949 !important;
+  }
+  span.icon_down_dir:before {
+      content: "";
+  }
+  
+  
