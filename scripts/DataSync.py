@@ -127,13 +127,13 @@ def save_response_content(response, destination):
 
 # Upload Vectors into Pinecone and Learning with Open AI Embeddings
 def Learning(data, url):
-    print("data----", data)
+    # print("data----", data)
     try:
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000, chunk_overlap=200)
 
         docs = text_splitter.split_documents(data)
-        print("docs----", docs)
+        # print("docs----", docs)
         embeddings = OpenAIEmbeddings(
             openai_api_key=os.environ["OPENAI_API_KEY"])
 
