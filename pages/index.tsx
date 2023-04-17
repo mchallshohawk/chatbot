@@ -171,7 +171,7 @@ export default function Home() {
         className="border-white text-2xl leading-[1.1] tracking-tighter text-center"
         style={{ marginTop: 30 + 'px' }}
       >
-        Your AI search about Swiss architecture norms and regulations
+        Your AI search for multi pdf files
       </h3>
       <main className={styles.main}>
         <div className={styles.cloud}>
