@@ -3,10 +3,14 @@
 # dependencies
 /node_modules
 /.pnp
+/scripts/venv
 .pnp.js
 
 # testing
 /coverage
+
+# vscode
+/.vscode/
 
 # next.js
 /.next/
@@ -28,6 +32,7 @@ yarn-error.log*
 # local env files
 .env*.local
 .env
+/scripts/client.json
 
 # vercel
 .vercel
@@ -36,7 +41,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-#Notion_db
+# Notion_db
 /Notion_DB
-scripts/test.py
+1scripts/test.py
 0001-additional-filter-requirement.patch.orig
+
+# Generated files
+/docs

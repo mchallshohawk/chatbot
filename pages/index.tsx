@@ -14,7 +14,6 @@ import {
 } from '../components/ui/accordion';
 import { useSelector } from 'react-redux';
 import { multiselectFilterProps } from '../utils/interface';
-import { FilterBar } from '../components/ui/SearchFilter/FilterBar';
 import axios from 'axios';
 import { Underline } from 'lucide-react';
 import React from 'react';
@@ -46,19 +45,7 @@ export default function Home() {
   const messageListRef = useRef<HTMLDivElement>(null);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => {
-    textAreaRef.current?.focus();
-    return () => {
-      axios.get(`${process.env.SERVERURL || ''}/api/gsheet`)
-      .then((res) => {
-        console.log(res.data);
-        setFilterOption(res.data.data??{})
-      })
-      .catch((err) => {
-        console.log('error', err);
-      });
-    }
-  }, []);
+
 
   //handle form submission
   async function handleSubmit(e: any) {
@@ -186,11 +173,6 @@ export default function Home() {
       >
         Your AI search about Swiss architecture norms and regulations
       </h3>
-      <div id="searchfilter-region">
-        <FilterBar
-          filterOptions={filterOptions}
-        />
-      </div>
       <main className={styles.main}>
         <div className={styles.cloud}>
           <div ref={messageListRef} className={styles.messagelist}>
@@ -255,8 +237,8 @@ export default function Home() {
                                     {doc[0].metadata.source.startsWith(
                                       'http',
                                     ) ? (
-                                      <a href={doc[0].metadata.page ?  doc[0].metadata.source +"#page="+doc[0].metadata.page : doc[0].metadata.source} target="_blank">
-                                        {doc[0].metadata.Title ? doc[0].metadata.Title : doc[0].metadata.source}
+                                      <a href={doc[0].metadata.source} target="_blank">
+                                        {doc[0].metadata.source}
                                       </a>
                                     ) : (
                                       doc[0].metadata.source
