@@ -171,7 +171,7 @@ export default function Home() {
         className="border-white text-2xl leading-[1.1] tracking-tighter text-center"
         style={{ marginTop: 30 + 'px' }}
       >
-        Your AI search for multi pdf files
+        Your AI search about Multi PDF files
       </h3>
       <main className={styles.main}>
         <div className={styles.cloud}>
@@ -233,6 +233,13 @@ export default function Home() {
                                     {doc[0].pageContent}
                                   </ReactMarkdown>
                                   <p className="mt-2">
+                                    <b>Page:</b>{' '}
+                                    {
+                                      <a href={doc[0].metadata.source} target="_blank">
+                                        {doc[0].metadata.page}
+                                      </a>
+                                    }
+                                    <br />
                                     <b>Source:</b>{' '}
                                     {doc[0].metadata.source.startsWith(
                                       'http',
@@ -266,7 +273,7 @@ export default function Home() {
                         </AccordionTrigger>
                         <AccordionContent>
                           <ReactMarkdown linkTarget="_blank">
-                            {doc.pageContent}
+                            {doc.pageContent + 1}
                           </ReactMarkdown>
                         </AccordionContent>
                       </AccordionItem>

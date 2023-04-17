@@ -34,9 +34,14 @@ TYPE_INDEX = 1
 URL_INDEX = 2
 DESTINATION = '../docs/'
 
+# Global variables
+PDFURLS = []
+
 
 # Read urls from google sheet
 def ReadUrls():
+    global PDFURLS
+
     result = service.spreadsheets().values().get(
         spreadsheetId=SHEET_ID, range=RANGE).execute()
 
@@ -47,6 +52,7 @@ def ReadUrls():
         if (field[URL_INDEX].startswith('http://') or field[URL_INDEX].startswith('https://')):
             temp.append(field)
 
+    PDFURLS = [i[URL_INDEX] for i in temp]
     return temp
 
 
@@ -63,7 +69,7 @@ def SyncUrls(urls):
             print("GDRIVE")
             download_file_from_google_drive(url[URL_INDEX])
         if text != "":
-            Learning(text, url)
+            Learning(text)
 
     print("Loading finished")
 
@@ -125,15 +131,27 @@ def save_response_content(response, destination):
                 f.write(chunk)
 
 
+def change_source_metadata(source):
+    id = source.split('/')[2].split('.')[0]
+
+    for i in PDFURLS:
+        if id in i:
+            return i
+
+
 # Upload Vectors into Pinecone and Learning with Open AI Embeddings
-def Learning(data, url):
-    # print("data----", data)
+def Learning(data):
     try:
+
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000, chunk_overlap=200)
 
         docs = text_splitter.split_documents(data)
-        # print("docs----", docs)
+
+        for i in range(len(docs)):
+            docs[i].metadata['source'] = change_source_metadata(
+                docs[i].metadata['source'])
+
         embeddings = OpenAIEmbeddings(
             openai_api_key=os.environ["OPENAI_API_KEY"])
 
@@ -152,14 +170,14 @@ def Learning(data, url):
 # Synchronize PDF files in Local
 def SyncLocal():
     entries = os.listdir('../docs/')
-    print("entries---", entries)
+
     for entry in entries:
         path = '../docs/' + entry
-        print("path--", path)
+
         try:
             loader = PyPDFLoader(path)
             rawTxt = loader.load()
-            Learning(rawTxt, path)
+            Learning(rawTxt)
         except Exception as e:
             sttime = datetime.now().strftime('%Y-%m-%d_%H:%M:%S - ')
             with open('UnReadableFile.txt', 'a') as f:
