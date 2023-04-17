@@ -230,13 +230,13 @@ export default function Home() {
                                 </AccordionTrigger>
                                 <AccordionContent>
                                   <ReactMarkdown linkTarget="_blank">
-                                    {doc[0].pageContent}
+                                    {doc[0].pageContent + 1}
                                   </ReactMarkdown>
                                   <p className="mt-2">
                                     <b>Page:</b>{' '}
                                     {
                                       <a href={doc[0].metadata.source} target="_blank">
-                                        {doc[0].metadata.page}
+                                        {doc[0].metadata.page + 1}
                                       </a>
                                     }
                                     <br />
