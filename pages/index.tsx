@@ -15,7 +15,7 @@ import {
 import { useSelector } from 'react-redux';
 import { multiselectFilterProps } from '../utils/interface';
 import axios from 'axios';
-import { Underline } from 'lucide-react';
+import { LucideAirVent, Underline } from 'lucide-react';
 import React from 'react';
 
 export default function Home() {
@@ -23,6 +23,7 @@ export default function Home() {
   const [query, setQuery] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [sourceDocs, setSourceDocs] = useState<Document[]>([]);
+  const [summaryDocs, setSummaryDocs] = useState<string>('')
   const [error, setError] = useState<string | null>(null);
   const [filterOptions, setFilterOption] = useState<multiselectFilterProps>({
     Interest: [],
@@ -34,13 +35,15 @@ export default function Home() {
     pending?: string;
     history: [string, string][];
     pendingSourceDocs?: any[];
+    pendingSummaryDocs?: any[];
   }>({
     messages: [],
     history: [],
     pendingSourceDocs: [],
+    pendingSummaryDocs: []
   });
 
-  const { messages, pending, history, pendingSourceDocs } = messageState;
+  const { messages, pending, history, pendingSourceDocs, pendingSummaryDocs } = messageState;
 
   const messageListRef = useRef<HTMLDivElement>(null);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -100,28 +103,47 @@ export default function Home() {
                   type: 'apiMessage',
                   message: state.pending ?? '',
                   sourceDocs: state.pendingSourceDocs,
+                  summaryDocs: state.pendingSummaryDocs,
                 },
               ],
               pending: undefined,
               pendingSourceDocs: undefined,
+              pendingSummaryDocs: undefined
             }));
             setLoading(false);
             ctrl.abort();
           } else {
-            const data = JSON.parse(event.data);
-            if (data.sourceDocs) {
+            const data = JSON.parse(event.data)
+
+            if (data.summaryDocs) {
               setMessageState((state) => ({
                 ...state,
-                pendingSourceDocs: data.sourceDocs,
+                pendingSummaryDocs: data.summaryDocs
               }));
+              
             } else {
               setMessageState((state) => ({
                 ...state,
                 pending: (state.pending ?? '') + data.data,
               }));
             }
+
+            if (data.sourceDocs) {
+              setMessageState((state) => ({
+                ...state,
+                pendingSourceDocs: data.sourceDocs
+              }));
+              
+            } else {
+              setMessageState((state) => ({
+                ...state,
+                pending: (state.pending ?? '') + data.data,
+              }));
+            }
+
+
           }
-        },
+        }
       });
     } catch (error) {
       setLoading(false);
@@ -151,11 +173,12 @@ export default function Home() {
               type: 'apiMessage',
               message: pending,
               sourceDocs: pendingSourceDocs,
+              summaryDocs: pendingSummaryDocs
             },
           ]
         : []),
     ];
-  }, [messages, pending, pendingSourceDocs]);
+  }, [messages, pending, pendingSourceDocs, pendingSummaryDocs]);
 
   //scroll to bottom of chat
   useEffect(() => {
@@ -179,6 +202,8 @@ export default function Home() {
             {chatMessages.map((message, index) => {
               let icon;
               let className;
+              let label;
+
               if (message.type === 'apiMessage') {
                 icon = (
                   <Image
@@ -191,6 +216,7 @@ export default function Home() {
                   />
                 );
                 className = styles.apimessage;
+                label = "See references below";
               } else {
                 icon = (
                   <Image
@@ -207,17 +233,18 @@ export default function Home() {
                   loading && index === chatMessages.length - 1
                     ? styles.usermessagewaiting
                     : styles.usermessage;
+                
+                label = message.message;
               }
               return (
                 <div key={index + 1}>
                   <div key={`chatMessage-${index}`} className={className}>
                     {icon}
                     <div className={styles.markdownanswer}>
-                      <ReactMarkdown linkTarget="_blank">
-                        {message.message}
-                      </ReactMarkdown>
+                      {label}
                     </div>
                   </div>
+                  {message.summaryDocs && (<div className="p-5">{message.summaryDocs}</div>)}
                   {message.sourceDocs && (
                     <div className="p-5">
                       <Accordion type="single" collapsible className="flex-col">

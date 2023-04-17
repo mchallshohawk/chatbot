@@ -1,9 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { OpenAIEmbeddings } from 'langchain/embeddings';
 import { PineconeStore } from 'langchain/vectorstores';
-import { OpenAIChat } from "langchain/llms";
 import { Configuration, OpenAIApi } from "openai";
 import { PineconeClient } from "@pinecone-database/pinecone";
+import { makeChain } from '@/utils/makechain';
 
 export default async function handler( req: NextApiRequest, res: NextApiResponse) {
     const { question, history, filter } : {
@@ -54,12 +54,11 @@ export default async function handler( req: NextApiRequest, res: NextApiResponse
 
 
     try {
-        const llm = new OpenAIChat({
-            temperature: 0,
-            topP: 1,
-            frequencyPenalty: 0,
-            presencePenalty: 0,
-            openAIApiKey: process.env.OPENAI_API_KEY
+        const chain = makeChain(vectorStore);
+        //Ask a question using chat history
+        const response = await chain.call({
+        question: sanitizedQuestion,
+        chat_history: history || [],
         });
 
         const score_data: [any, number][] = await vectorStore.similaritySearchWithScore(sanitizedQuestion, 3);
@@ -96,7 +95,11 @@ export default async function handler( req: NextApiRequest, res: NextApiResponse
 
             sendData(JSON.stringify({
                 sourceDocs: output
-            }));            
+            }));  
+            
+            sendData(JSON.stringify({
+                summaryDocs: response['text']
+            }));
         }
 
     } catch (error) {
