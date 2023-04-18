@@ -3,7 +3,8 @@ import { OpenAIEmbeddings } from 'langchain/embeddings';
 import { PineconeStore } from 'langchain/vectorstores';
 import { Configuration, OpenAIApi } from "openai";
 import { PineconeClient } from "@pinecone-database/pinecone";
-import { makeChain } from '@/utils/makechain';
+import { OpenAIChat } from "langchain/llms";
+import { loadQAStuffChain } from 'langchain/chains';
 
 export default async function handler( req: NextApiRequest, res: NextApiResponse) {
     const { question, history, filter } : {
@@ -54,18 +55,30 @@ export default async function handler( req: NextApiRequest, res: NextApiResponse
 
 
     try {
-        const chain = makeChain(vectorStore);
-        //Ask a question using chat history
-        const response = await chain.call({
-        question: sanitizedQuestion,
-        chat_history: history || [],
+
+        const llm = new OpenAIChat({
+            temperature: 1,
+            topP: 1,
+            frequencyPenalty: 0,
+            presencePenalty: 0,
+            openAIApiKey: process.env.OPENAI_API_KEY
         });
 
         const score_data: [any, number][] = await vectorStore.similaritySearchWithScore(sanitizedQuestion, 3);
+
+
+        const score_data1 = await vectorStore.similaritySearch(sanitizedQuestion)
+
         let output = score_data.filter(([doc, score]: (any | number)[]) => {
             if (Number(score) > 0.5)
                 return true;
             return false;
+        });
+
+        const chainA = loadQAStuffChain(llm);
+        let resA = await chainA.call({
+            question: sanitizedQuestion,
+            input_documents: score_data1,
         });
 
         //if there are no similarities, clear output and also make normal call for ChatGPT to answer the generically question without any vector
@@ -98,7 +111,7 @@ export default async function handler( req: NextApiRequest, res: NextApiResponse
             }));  
             
             sendData(JSON.stringify({
-                summaryDocs: response['text']
+                summaryDocs: resA.text
             }));
         }
 
