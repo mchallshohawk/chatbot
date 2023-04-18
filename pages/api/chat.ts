@@ -67,7 +67,7 @@ export default async function handler( req: NextApiRequest, res: NextApiResponse
         const score_data: [any, number][] = await vectorStore.similaritySearchWithScore(sanitizedQuestion, 3);
 
 
-        const score_data1 = await vectorStore.similaritySearch(sanitizedQuestion)
+        const score_data1 = await vectorStore.similaritySearch(sanitizedQuestion, 20)
 
         let output = score_data.filter(([doc, score]: (any | number)[]) => {
             if (Number(score) > 0.5)
