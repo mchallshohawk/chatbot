@@ -26,6 +26,7 @@ export default async function handler( req: NextApiRequest, res: NextApiResponse
         environment: process.env.PINECONE_ENVIRONMENT ?? "",
     });
 
+
     const pineconeIndex = client.Index(process.env.PINECONE_INDEX_NAME ?? "");
     const vectorStore = await PineconeStore.fromExistingIndex(
         new OpenAIEmbeddings({
@@ -67,7 +68,7 @@ export default async function handler( req: NextApiRequest, res: NextApiResponse
         const score_data: [any, number][] = await vectorStore.similaritySearchWithScore(sanitizedQuestion, 3);
 
 
-        const score_data1 = await vectorStore.similaritySearchWithScore(sanitizedQuestion, 30)
+        const score_data1 = await vectorStore.similaritySearch(sanitizedQuestion)
 
         let output = score_data.filter(([doc, score]: (any | number)[]) => {
             if (Number(score) > 0.5)
