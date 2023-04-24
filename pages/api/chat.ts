@@ -4,9 +4,22 @@ import { PineconeStore } from 'langchain/vectorstores';
 import { Configuration, OpenAIApi } from "openai";
 import { PineconeClient } from "@pinecone-database/pinecone";
 import { OpenAIChat } from "langchain/llms";
-import { loadQAStuffChain } from 'langchain/chains';
+import { loadQAStuffChain, loadQAChain } from 'langchain/chains';
+import { PromptTemplate } from "langchain/prompts";
+import { CallbackManager } from "langchain/callbacks";
 
 export default async function handler( req: NextApiRequest, res: NextApiResponse) {
+
+    const SYSTEM_TEMPLATE = PromptTemplate.fromTemplate(
+        `Please answer with 5 sentences. pLease insert <br> each sentence.
+        {chat_history}
+          Question: {question}
+          =========
+          {context}
+          =========
+          Answer in Markdown:`,
+      );
+
     const { question, history, filter } : {
             question: string; history: string; filter: any; } = req.body;
 
@@ -58,17 +71,24 @@ export default async function handler( req: NextApiRequest, res: NextApiResponse
     try {
 
         const llm = new OpenAIChat({
-            temperature: 1,
+            temperature: 0,
+            modelName: 'gpt-3.5-turbo',
             topP: 1,
             frequencyPenalty: 0,
             presencePenalty: 0,
-            openAIApiKey: process.env.OPENAI_API_KEY
+            openAIApiKey: process.env.OPENAI_API_KEY,
+            streaming: true,
+            callbackManager: CallbackManager.fromHandlers({
+            async handleLLMNewToken(token: string) {
+              sendData(JSON.stringify({ summaryDocs: token }));
+            },
+          }),
         });
 
         const score_data: [any, number][] = await vectorStore.similaritySearchWithScore(sanitizedQuestion, 3);
 
 
-        const score_data1 = await vectorStore.similaritySearch(sanitizedQuestion)
+        const score_data1 = await vectorStore.similaritySearch(sanitizedQuestion, 10)
 
         let output = score_data.filter(([doc, score]: (any | number)[]) => {
             if (Number(score) > 0.5)
@@ -76,14 +96,19 @@ export default async function handler( req: NextApiRequest, res: NextApiResponse
             return false;
         });
 
-        const chainA = loadQAStuffChain(llm);
+        const chainA = loadQAChain(llm, {
+            type: "stuff",
+            prompt: SYSTEM_TEMPLATE,
+          });
         let resA = await chainA.call({
             question: sanitizedQuestion,
             input_documents: score_data1,
+            chat_history: []
         });
 
         //if there are no similarities, clear output and also make normal call for ChatGPT to answer the generically question without any vector
         if (output.length === 1000) {
+
             const OpenAI_response = await openai.createChatCompletion({
                 model: "gpt-3.5-turbo",
                 messages: [{ 

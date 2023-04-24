@@ -118,7 +118,7 @@ export default function Home() {
             if (data.summaryDocs) {
               setMessageState((state) => ({
                 ...state,
-                pendingSummaryDocs: data.summaryDocs
+                pendingSummaryDocs: (state.pendingSummaryDocs ?? '') + data.summaryDocs
               }));
               
             } else {
@@ -244,7 +244,12 @@ export default function Home() {
                       {label}
                     </div>
                   </div>
-                  {message.summaryDocs && (<div className="p-5">{message.summaryDocs}</div>)}
+                  {message.summaryDocs && (<div className="p-5"><p>{message.summaryDocs}</p><style jsx>{`
+        p {
+          margin: 0;
+          padding-bottom: 10px;
+        }
+      `}</style></div>)}
                   {message.sourceDocs && (
                     <div className="p-5">
                       <Accordion type="single" collapsible className="flex-col">
